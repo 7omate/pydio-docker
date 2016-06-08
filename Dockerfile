@@ -6,6 +6,15 @@ FROM kdelfour/supervisor-docker
 MAINTAINER Kevin Delfour <kevin@delfour.eu>
 
 # ------------------------------------------------------------------------------
+# Set the locale
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+RUN echo "Europe/Paris" > /etc/timezone
+RUN dpkg-reconfigure -f noninteractive tzdata
+
+# ------------------------------------------------------------------------------
 # Install Base
 RUN apt-get update
 RUN apt-get install -yq wget unzip nginx fontconfig-config fonts-dejavu-core \
@@ -21,7 +30,7 @@ RUN service mysql start && \
     mysql -uroot -e "CREATE USER 'pydio'@'localhost' IDENTIFIED BY 'pydio';" && \
     mysql -uroot -e "GRANT ALL PRIVILEGES ON *.* TO 'pydio'@'localhost' WITH GRANT OPTION;" && \
     mysql -uroot -e "FLUSH PRIVILEGES;"
-    
+
 # ------------------------------------------------------------------------------
 # Configure php-fpm
 RUN sed -i -e "s/output_buffering\s*=\s*4096/output_buffering = Off/g" /etc/php5/fpm/php.ini
@@ -44,6 +53,15 @@ RUN mkdir /etc/nginx/ssl
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt -subj '/CN=localhost/O=My Company Name LTD./C=US'
 
 # ------------------------------------------------------------------------------
+# Install & Configure ioncube
+WORKDIR /tmp
+RUN wget http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_5.1.2.zip
+# TODO checksum check
+RUN unzip ioncube_loaders_lin_x86-64_5.1.2.zip
+RUN mv ioncube/ioncube_loader_lin_5.5.so /usr/lib/php5/20121212/
+RUN echo "zend_extension=/usr/lib/php5/20121212/ioncube_loader_lin_5.5.so" > /etc/php5/fpm/conf.d/00-ioncube.ini
+
+# ------------------------------------------------------------------------------
 # Configure services
 RUN update-rc.d nginx defaults
 RUN update-rc.d php5-fpm defaults
@@ -53,16 +71,19 @@ RUN update-rc.d mysql defaults
 # Install Pydio
 ENV PYDIO_VERSION 6.4.1
 WORKDIR /var/www
-RUN wget http://downloads.sourceforge.net/project/ajaxplorer/pydio/stable-channel/${PYDIO_VERSION}/pydio-core-${PYDIO_VERSION}.zip
-RUN unzip pydio-core-${PYDIO_VERSION}.zip
-RUN mv pydio-core-${PYDIO_VERSION} pydio-core
+#RUN wget http://downloads.sourceforge.net/project/ajaxplorer/pydio/stable-channel/${PYDIO_VERSION}/pydio-core-${PYDIO_VERSION}.zip
+RUN wget https://download.pydio.com/641jgfear843tubi51n/pydio-enterprise-6.4.1.zip
+RUN unzip pydio-enterprise-${PYDIO_VERSION}.zip
+#RUN unzip pydio-core-${PYDIO_VERSION}.zip
+RUN mv pydio-enterprise-${PYDIO_VERSION} pydio-core
 RUN chown -R www-data:www-data /var/www/pydio-core
 RUN chmod -R 770 /var/www/pydio-core
 RUN chmod 777  /var/www/pydio-core/data/files/
 RUN chmod 777  /var/www/pydio-core/data/personal/
 
 WORKDIR /
-RUN ln -s /var/www/pydio-core/data pydio-data 
+RUN ln -s /var/www/pydio-core/data pydio-data
+
 # ------------------------------------------------------------------------------
 # Expose ports.
 EXPOSE 80
@@ -79,3 +100,4 @@ ADD conf/startup.conf /etc/supervisor/conf.d/
 
 # Start supervisor, define default command.
 CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+
