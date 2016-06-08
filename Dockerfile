@@ -6,6 +6,15 @@ FROM kdelfour/supervisor-docker
 MAINTAINER Kevin Delfour <kevin@delfour.eu>
 
 # ------------------------------------------------------------------------------
+# Set the locale
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+RUN echo "Europe/Paris" > /etc/timezone
+RUN dpkg-reconfigure -f noninteractive tzdata
+
+# ------------------------------------------------------------------------------
 # Install Base
 RUN apt-get update
 RUN apt-get install -yq wget unzip nginx fontconfig-config fonts-dejavu-core \
@@ -21,7 +30,7 @@ RUN service mysql start && \
     mysql -uroot -e "CREATE USER 'pydio'@'localhost' IDENTIFIED BY 'pydio';" && \
     mysql -uroot -e "GRANT ALL PRIVILEGES ON *.* TO 'pydio'@'localhost' WITH GRANT OPTION;" && \
     mysql -uroot -e "FLUSH PRIVILEGES;"
-    
+
 # ------------------------------------------------------------------------------
 # Configure php-fpm
 RUN sed -i -e "s/output_buffering\s*=\s*4096/output_buffering = Off/g" /etc/php5/fpm/php.ini
@@ -62,7 +71,7 @@ RUN chmod 777  /var/www/pydio-core/data/files/
 RUN chmod 777  /var/www/pydio-core/data/personal/
 
 WORKDIR /
-RUN ln -s /var/www/pydio-core/data pydio-data 
+RUN ln -s /var/www/pydio-core/data pydio-data
 # ------------------------------------------------------------------------------
 # Expose ports.
 EXPOSE 80
@@ -79,3 +88,4 @@ ADD conf/startup.conf /etc/supervisor/conf.d/
 
 # Start supervisor, define default command.
 CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+
