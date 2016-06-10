@@ -16,7 +16,7 @@ RUN dpkg-reconfigure -f noninteractive tzdata
 
 # ------------------------------------------------------------------------------
 # Install Base
-RUN apt-get update
+RUN apt-get update -qq
 RUN apt-get install -yq wget unzip nginx fontconfig-config fonts-dejavu-core \
     php5-fpm php5-common php5-json php5-cli php5-common php5-mysql\
     php5-gd php5-json php5-mcrypt php5-readline psmisc ssl-cert \
@@ -60,6 +60,7 @@ RUN wget http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-
 RUN unzip ioncube_loaders_lin_x86-64_5.1.2.zip
 RUN mv ioncube/ioncube_loader_lin_5.5.so /usr/lib/php5/20121212/
 RUN echo "zend_extension=/usr/lib/php5/20121212/ioncube_loader_lin_5.5.so" > /etc/php5/fpm/conf.d/00-ioncube.ini
+RUN echo "zend_extension=/usr/lib/php5/20121212/ioncube_loader_lin_5.5.so" > /etc/php5/cli/conf.d/00-ioncube.ini
 
 # ------------------------------------------------------------------------------
 # Configure services
