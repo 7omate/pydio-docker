@@ -18,7 +18,7 @@ RUN dpkg-reconfigure -f noninteractive tzdata
 # Install Base
 RUN apt-get update -qq
 RUN apt-get install -yq wget unzip nginx fontconfig-config fonts-dejavu-core \
-    php5-fpm php5-common php5-json php5-cli php5-common php5-mysql\
+    php5-fpm php5-common php5-json php5-cli php5-common php5-mysql php5-intl php-apc\
     php5-gd php5-json php5-mcrypt php5-readline psmisc ssl-cert \
     ufw php-pear libgd-tools libmcrypt-dev mcrypt mysql-server mysql-client
 
@@ -70,10 +70,11 @@ RUN update-rc.d mysql defaults
 
 # ------------------------------------------------------------------------------
 # Install Pydio
-ENV PYDIO_VERSION 6.4.1
+ENV PYDIO_VERSION 6.4.2
+ENV API_USERNAME SET_ME
+ENV API_PASSWORD SET_ME
 WORKDIR /var/www
-#RUN wget http://downloads.sourceforge.net/project/ajaxplorer/pydio/stable-channel/${PYDIO_VERSION}/pydio-core-${PYDIO_VERSION}.zip
-RUN wget https://download.pydio.com/641jgfear843tubi51n/pydio-enterprise-6.4.1.zip
+RUN wget https://${API_USERNAME}:${API_PASSWORD}@download.pydio.com/auth/enterprise/archives/pydio-enterprise-${PYDIO_VERSION}.zip
 RUN unzip pydio-enterprise-${PYDIO_VERSION}.zip
 #RUN unzip pydio-core-${PYDIO_VERSION}.zip
 RUN mv pydio-enterprise-${PYDIO_VERSION} pydio-core
