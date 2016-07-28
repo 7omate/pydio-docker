@@ -62,8 +62,7 @@ RUN update-rc.d mysql defaults
 # Install Pydio
 ENV PYDIO_VERSION 6.4.2
 WORKDIR /var/www
-#RUN wget http://downloads.sourceforge.net/project/ajaxplorer/pydio/stable-channel/${PYDIO_VERSION}/pydio-core-${PYDIO_VERSION}.zip
-RUN wget https://download.pydio.com/pub/core/ci/pydio-core-6.4.2.zip
+RUN wget http://downloads.sourceforge.net/project/ajaxplorer/pydio/stable-channel/${PYDIO_VERSION}/pydio-core-${PYDIO_VERSION}.zip
 RUN unzip pydio-core-${PYDIO_VERSION}.zip
 RUN mv pydio-core-${PYDIO_VERSION} pydio-core
 RUN chown -R www-data:www-data /var/www/pydio-core
