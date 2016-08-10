@@ -74,9 +74,13 @@ ENV PYDIO_VERSION 6.4.2
 ENV API_USERNAME SET_ME
 ENV API_PASSWORD SET_ME
 WORKDIR /var/www
-RUN wget https://${API_USERNAME}:${API_PASSWORD}@download.pydio.com/auth/enterprise/archives/pydio-enterprise-${PYDIO_VERSION}.zip
+
+#RUN wget https://${API_USERNAME}:${API_PASSWORD}@download.pydio.com/auth/enterprise/archives/pydio-enterprise-${PYDIO_VERSION}.zip
+# tars don't need untaring
+#ADD bins/pydio-enterprise-${PYDIO_VERSION}.tar.gz /var/www/
+ADD bins/pydio-enterprise-${PYDIO_VERSION}.zip /var/www/
 RUN unzip pydio-enterprise-${PYDIO_VERSION}.zip
-#RUN unzip pydio-core-${PYDIO_VERSION}.zip
+
 RUN mv pydio-enterprise-${PYDIO_VERSION} pydio-core
 RUN chown -R www-data:www-data /var/www/pydio-core
 RUN chmod -R 770 /var/www/pydio-core
