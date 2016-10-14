@@ -16,11 +16,16 @@ RUN dpkg-reconfigure -f noninteractive tzdata
 
 # ------------------------------------------------------------------------------
 # Install Base
+# Add ppa for PHP
+RUN echo "deb http://ppa.launchpad.net/ondrej/php/ubuntu trusty main" >> /etc/apt/sources.list
+RUN echo "deb-src http://ppa.launchpad.net/ondrej/php/ubuntu trusty main" >> /etc/apt/sources.list
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E5267A6C
 RUN apt-get update
 RUN apt-get install -yq wget unzip nginx fontconfig-config fonts-dejavu-core \
-    php5-fpm php5-common php5-json php5-cli php5-common php5-mysql\
-    php5-gd php5-json php5-mcrypt php5-readline php5-intl php-apc\
-    psmisc ssl-cert ufw php-pear libgd-tools libmcrypt-dev mcrypt mysql-server mysql-client
+    php7.0-fpm php7.0-common php7.0-json php7.0-cli php7.0-common php7.0-mysql\
+    php7.0-gd php7.0-json php7.0-mcrypt php7.0-readline php7.0-intl php7.0-xml\
+    psmisc ssl-cert ufw libgd-tools libmcrypt-dev mcrypt mysql-server mysql-client
+# php-pear ?
 
 # ------------------------------------------------------------------------------
 # Configure mysql
@@ -33,11 +38,14 @@ RUN service mysql start && \
 
 # ------------------------------------------------------------------------------
 # Configure php-fpm
-RUN sed -i -e "s/output_buffering\s*=\s*4096/output_buffering = Off/g" /etc/php5/fpm/php.ini
-RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" /etc/php5/fpm/php.ini
-RUN sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 1G/g" /etc/php5/fpm/php.ini
-RUN sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 1G/g" /etc/php5/fpm/php.ini
-RUN php5enmod mcrypt
+RUN sed -i -e "s/output_buffering\s*=\s*4096/output_buffering = Off/g" /etc/php/7.0/fpm/php.ini
+RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" /etc/php/7.0/fpm/php.ini
+RUN sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 1G/g" /etc/php/7.0/fpm/php.ini
+RUN sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 1G/g" /etc/php/7.0/fpm/php.ini
+RUN mkdir -p /var/run/
+RUN sed -i -e "s|pid = .*$|pid = /var/run/php7.0-fpm.pid|" /etc/php/7.0/fpm/php-fpm.conf
+RUN sed -i -e "s|listen = .*$|listen = /var/run/php7.0-fpm.sock|" /etc/php/7.0/fpm/pool.d/www.conf
+#RUN php7enmod mcrypt
 
 # ------------------------------------------------------------------------------
 # Configure nginx
@@ -55,7 +63,7 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/n
 # ------------------------------------------------------------------------------
 # Configure services
 RUN update-rc.d nginx defaults
-RUN update-rc.d php5-fpm defaults
+RUN update-rc.d php7.0-fpm defaults
 RUN update-rc.d mysql defaults
 
 # ------------------------------------------------------------------------------
@@ -76,6 +84,7 @@ RUN ln -s /var/www/pydio-core/data pydio-data
 # Expose ports.
 EXPOSE 80
 EXPOSE 443
+EXPOSE 8090
 
 # ------------------------------------------------------------------------------
 # Expose volumes
